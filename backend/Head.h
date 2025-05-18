@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <errno.h>
-
+#include "../database/operations.c"
 struct user_details {
     char *fName;
     char *lname;

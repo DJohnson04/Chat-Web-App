@@ -16,12 +16,10 @@ int main()
     while (listen(server_socket, 5) != -1) {
         //connect to specific account form
         int user_socket = accept(server_socket, NULL, NULL);
-        //handle new data:
         char buffer[1000];
         memset(buffer, 0,  sizeof(buffer));
         recv(user_socket, buffer, sizeof(buffer), 0);
-
-
+        printf("Buffer: %s", buffer);
         //parse post request
         int counter = 0;
         while (counter < 1000 - 6 && buffer[counter] != NULL) {
@@ -33,8 +31,48 @@ int main()
             }
             counter++;
         }
-        
+
         //store data inside
+        char filePath[] = ["../database/user_data.txt"];
+        setFile(filePath);
+        //data alreeady exist inside file, 
+        char htmlResponsep[1500];
+        if (add(user_data->fName, user_data->lName, user_data->email, user_data->password) == 0) {
+            printf("data already existw inside the textfile.");
+            //send html form showing account creation failed:
+             htmlResponse = "HTTP/1.1 400 Invalid Details\nContent-Type: text/html\n Content-Length: 500\n\n
+                <html>
+                    <head>
+                        <title>Account Couldn't be Created!</title>
+                    </head>
+                    <body>
+                        <p>Your account was not created, due to the email already existing, please attempt to login, or try again with a different email acceount</p>
+                        <a href=\"/create_account\">Create Account</a>
+                        <a href=\"/login.html\">Log in</a>
+                    </body>
+                </html>
+            "
+            //Write HTTP Reponse back to socket, to diseplay new page
+        } else {
+            htmlResponse = "HTTP/1.1 200 Account Created\nContent-Type: text/html\n Content-Length: 500\n\n
+                <html>
+                    <head>
+                        <title>Account Created!</title>
+                    </head>
+                    <body>
+                        <p>Your account was created, you can now login :)</p>
+                        <a href=\"/login.html\">Log in</a>
+                        <a hrefj=\"/home.html\">Home</a>
+                    </body>
+                </html>
+            "
+        }
+        //send htmlREsponse back, and display page
+        write(server_socket, htmlResponse, 1500);
+
+        
+
+
         free(user_data.fName);
         free(user_data.lName);
         free(user_data.email);
