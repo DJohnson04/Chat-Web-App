@@ -10,10 +10,10 @@
 #include "../database/operations.h"
 #include "../database/operations.c"
 struct user_details {
-    char *fName;
-    char *lName;
-    char *email;
-    char *password;
+    char fName[MAX_LENGTH_STRING];
+    char lName[MAX_LENGTH_STRING];
+    char email[MAX_LENGTH_STRING];
+    char password[MAX_LENGTH_STRING];
 };
 int findLen(char *, int, char);
 void parsePostRequest(char* buffer, int start, int lenOfBuffer, char terminator, struct user_details *details);

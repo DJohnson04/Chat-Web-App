@@ -19,8 +19,8 @@ int main()
         char buffer[1000];
         memset(buffer, 0,  sizeof(buffer));
         recv(user_socket, buffer, sizeof(buffer), 0);
-        printf("Buffer: %s", buffer);
-        //parse post request
+        //printf("Buffer: %s", buffer);
+        //parse post request, loop through post request until start of form data is found, then calls parsePost
         int counter = 0;
         while (counter < 1000 - 6 && buffer[counter] != NULL) {
             if (strncmp(&buffer[counter], infoHeader, 4) == 0){
@@ -35,10 +35,10 @@ int main()
         //store data inside
         char filePath[] = "../database/user_data.txt";
         setFile(filePath);
-        //data alreeady exist inside file, 
         char htmlResponse[1500];
+        //data alreeady exist inside file,
         if (add(user_data.fName, user_data.lName, user_data.email, user_data.password) == 0) {
-            printf("data already existw inside the textfile.");
+            printf("data already exist inside the textfile.");
             //send html form showing account creation failed:
              char htmlResponse[] = "HTTP/1.1 400 Invalid Details\nContent-Type: text/html\n Content-Length: 500\n\n"
                 "<html>"
@@ -68,15 +68,6 @@ int main()
                 write(server_socket, htmlResponse, 1500);
 
         }
-        //send htmlREsponse back, and display page
-
-        
-
-
-        free(user_data.fName);
-        free(user_data.lName);
-        free(user_data.email);
-        free(user_data.password);
     }
 }
 
@@ -93,39 +84,40 @@ int findLen(char *buffer, int startPos, char terminator) {
 void parsePostRequest(char* buffer, int start, int lenOfBuffer, char terminator, struct user_details *details) {
     //fName
     int len = findLen(buffer, start, terminator);
-
-    details->fName = malloc(sizeof(char) * len + 1);
-    if (details->fName == NULL) {
-        printf(" ERROR");
+    memset(details->fName, 0, MAX_LENGTH_STRING);
+    if (len > MAX_LENGTH_STRING) {
+        printf("First Name too Long");
+        return;
     }
     strlcpy(details->fName, &buffer[start], len + 1);
     printf("fName in var: %s\n", details->fName);
     //lName
     start += len + 7; //move counter past fName & to start of lName
     len = findLen(buffer, start, terminator);
-
-    details->lName = malloc(sizeof(char) * len);
-    if (details->lName == NULL) {
-        printf("another eror :(");
+    memset(details->lName, 0, MAX_LENGTH_STRING);
+    if (len > MAX_LENGTH_STRING) {
+        printf("Last Name too Long");
+        return;
     }
     strlcpy(details->lName, &buffer[start], len + 1);
     printf("lName in var: %s\n", details->lName);
     //email
     start += len + 7; //move counter past lName & to start of email
     len = findLen(buffer, start, terminator);
-
-    details->email = malloc(sizeof(char) * len);
-    if (details->email == NULL) {
-        printf("another eror :(");
+    memset(details->email, 0, MAX_LENGTH_STRING);
+    if (len > MAX_LENGTH_STRING) {
+        printf("Email too Long");
+        return;
     }
     strlcpy(details->email, &buffer[start], len + 1);
     printf("email in var: %s\n", details->email);
     //password
     start += len + 7; //move counter past email & to start of password
     len = findLen(buffer, start, terminator);
-    details->password = malloc(sizeof(char) * len);
-    if (details->password == NULL) {
-        printf("another eror :(");
+    memset(details->password, 0, MAX_LENGTH_STRING);
+    if (len > MAX_LENGTH_STRING) {
+        printf("Email too Long");
+        return;
     }
     strlcpy(details->password, &buffer[start], len);
     printf("password in var: %s", details->password);
