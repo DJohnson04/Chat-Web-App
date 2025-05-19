@@ -1,2 +1,6 @@
-email,fname,lname,password
-
+email, fName, lName, password
+djohnson477@gatech.edu,david,johnson,testingPassword
+test@gatech.edu,test,test,testingPassword
+test5@gatech.edu,test,test,testingPassword
+bnbking876%40gmail.com,David,Johnson,jhkggkhjy
+,,,
