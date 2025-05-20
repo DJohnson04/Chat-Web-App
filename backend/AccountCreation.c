@@ -1,27 +1,15 @@
-//handles the post request from /createAccount, stores the data in a new database/textfile(for right now),
+//Helper file that handles the post request from /createAccount, stores the data in a new database/textfile(for right now),
 #include "Head.h"
-int main() 
+int AccountCreation(int user_socket, char *buffer)
 {
-    //allows forms to be accepted
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in server_address;
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(8080);
-    server_address.sin_addr.s_addr = INADDR_ANY;
-
     char infoHeader[] = "fname";
     struct user_details user_data;
-
-    bind(server_socket, (struct sockaddr*) &server_address, sizeof(server_address));
-    while (listen(server_socket, 5) != -1) {
-        //connect to specific account form
-        int user_socket = accept(server_socket, NULL, NULL);
-        char buffer[1000];
-        memset(buffer, 0,  sizeof(buffer));
-        recv(user_socket, buffer, sizeof(buffer), 0);
         printf("Buffer: %s", buffer);
-        //parse post request, loop through post request until start of form data is found, then calls parsePost
+        //loop thorugh request until blank line is found(where data is stored)
         int counter = 0;
+        while (buffer[counter] != '\n') {
+            counter++;
+        }
         while (counter < 1000 - 6 && buffer[counter] != NULL) {
             if (strncmp(&buffer[counter], infoHeader, 4) == 0){
                 //found start of POST request, start parse
@@ -32,7 +20,7 @@ int main()
             counter++;
         }
 
-        //store data inside
+        //store data inside file
         char filePath[] = "../database/user_data.txt";
         setFile(filePath);
         char htmlResponse[1500];
@@ -84,12 +72,9 @@ int main()
 
             write(user_socket, htmlResponse, strlen(htmlResponse));
 
-
         }
     }
-    close(server_socket);
-}
-
+   
 int findLen(char *buffer, int startPos, char terminator) {
     int count = startPos;
     int len = sizeof(buffer) - count;
