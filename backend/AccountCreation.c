@@ -19,7 +19,7 @@ int main()
         char buffer[1000];
         memset(buffer, 0,  sizeof(buffer));
         recv(user_socket, buffer, sizeof(buffer), 0);
-        //printf("Buffer: %s", buffer);
+        printf("Buffer: %s", buffer);
         //parse post request, loop through post request until start of form data is found, then calls parsePost
         int counter = 0;
         while (counter < 1000 - 6 && buffer[counter] != NULL) {
@@ -38,37 +38,56 @@ int main()
         char htmlResponse[1500];
         //data alreeady exist inside file,
         if (add(user_data.fName, user_data.lName, user_data.email, user_data.password) == 0) {
-            printf("data already exist inside the textfile.");
-            //send html form showing account creation failed:
-             char htmlResponse[] = "HTTP/1.1 400 Invalid Details\nContent-Type: text/html\n Content-Length: 500\n\n"
-                "<html>"
-                    "<head>"
-                        "<title>Account Couldn't be Created!</title>"
-                    "</head>"
-                    "<body>"
-                        "<p>Your account was not created, due to the email already existing, please attempt to login, or try again with a different email acceount</p>"
-                        "<a href=\"/create_account\">Create Account</a>"
-                        "<a href=\"/login.html\">Log in</a>"
-                    "</body>"
-                "</html>";
-                write(server_socket, htmlResponse, 1500);
+            printf("Data already exists inside the text file.\n");
+
+            // HTML body for the error response
+            const char *htmlBody = "<html><head><title>Account Couldn't be Created!</title></head>"
+                                "<body><p>Your account was not created, due to the email already existing. "
+                                "Please attempt to log in, or try again with a different email account.</p>"
+                                "<a href=\"/frontend/create_account.html\">Create Account</a><br>"
+                                "<a href=\"/frontend/login.html\">Log in</a></body></html>";
+
+            // Calculate content length
+            int contentLength = strlen(htmlBody);
+
+            // Prepare full HTTP response
+            char htmlResponse[1024];  // Make sure this is large enough
+            snprintf(htmlResponse, sizeof(htmlResponse),
+                    "HTTP/1.1 400 Bad Request\r\n"
+                    "Content-Type: text/html\r\n"
+                    "Content-Length: %d\r\n"
+                    "\r\n"
+                    "%s",
+                    contentLength, htmlBody);
+
+            // Write HTTP response back to the client
+            write(user_socket, htmlResponse, strlen(htmlResponse));
             //Write HTTP Reponse back to socket, to diseplay new page
         } else {
-            char htmlResponse[] = "HTTP/1.1 200 Account Created\nContent-Type: text/html\n Content-Length: 500\n\n"
-                "<html>"
-                 "   <head>"
-                        "<title>Account Created!</title>"
-                    "</head>"
-                    "<body>"
-                     "   <p>Your account was created, you can now login :)</p>"
-                      "  <a href=\"/login.html\">Log in</a>"
-                     "   <a hrefj=\"/home.html\">Home</a>"
-                    "</body>"
-                "</html>";
-                write(server_socket, htmlResponse, 1500);
+            const char *htmlBody = "<html><head><title>Account Created!</title></head>"
+                       "<body><p>Your account was created, "
+                       "login</p>"
+                       "<a href=\"/create_account\">Create Account</a><br>"
+                       "<a href=\"/login.html\">Log in</a></body></html>";
+
+            char htmlResponse[1024];
+            int contentLength = strlen(htmlBody);
+
+            // Format the full HTTP response
+            snprintf(htmlResponse, sizeof(htmlResponse),
+                    "HTTP/1.1 200 OK\r\n"
+                    "Content-Type: text/html\r\n"
+                    "Content-Length: %d\r\n"
+                    "\r\n"
+                    "%s",
+                    contentLength, htmlBody);
+
+            write(user_socket, htmlResponse, strlen(htmlResponse));
+
 
         }
     }
+    close(server_socket);
 }
 
 int findLen(char *buffer, int startPos, char terminator) {
@@ -115,11 +134,13 @@ void parsePostRequest(char* buffer, int start, int lenOfBuffer, char terminator,
     start += len + 7; //move counter past email & to start of password
     len = findLen(buffer, start, terminator);
     memset(details->password, 0, MAX_LENGTH_STRING);
-    if (len > MAX_LENGTH_STRING) {
-        printf("Email too Long");
-        return;
-    }
-    strlcpy(details->password, &buffer[start], len);
-    printf("password in var: %s", details->password);
+
+    //if (len > MAX_LENGTH_STRING) {
+     //   printf("password too Long");
+      //  return;
+    //}
+    strlcpy(details->password, &buffer[start], len + 1);
+    printf("password in var: %s\n", details->password);
+
 } 
 //fname=name&lname=name&email=wmail%40server.com&paswd=password
