@@ -2,16 +2,28 @@
 #include "Head.h"
 
 
+
 int main()
 {
+    //////Constant Vars
+    const char BAD_REQUEST[] = "HTTP/1.1 400 Error\n\n";
+    const char POSTCREATE_ACCOUNT[] = "POST /create_account";
+    const char GETCREATE_ACCOUNT[] = "get /create_account";
+
+    const char POSTLOGIN[] = "POST /login";
+    const char GETLOGIN[] = "GET /login";
+
+    const char GETHOME[] = "GET /home";
+    const char GET_CHAT[] = "GET  /chat_";
+
     //handle socket creation
-    int server_socked = socket(IF_INET, SOCK_STREAM, 0);
+    int server_socket = socket(PF_INET6, SOCK_STREAM, 0);
     struct sockaddr_in server_address;
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(8080);
     server_address.sin_addr.s_addr = INADDR_ANY;
 
-    bind(server_address, (struct  sockaddr*) &server_address, sizesof(server_address));
+    bind(server_socket, (struct  sockaddr*) &server_address, sizeof(server_address));
     while (listen(server_socket, 10) != -1) {
         int request_socket = accept(server_socket, NULL, NULL);
         char HTTPREQUEST[1000];
@@ -26,7 +38,7 @@ int main()
                     o++;
                 } 
                 char room_name[o - 11];
-                strcpy(room_name, &HTTPREQUEST[11], o - 11);
+                strncpy(room_name, &HTTPREQUEST[11], o - 11);
                 printf("\nRoom Name: %s\n", room_name);
                 load_chatroom(request_socket, room_name);
             }
@@ -40,9 +52,10 @@ int main()
             }
             char file_path[50];
             snprintf(file_path, sizeof(file_path), "../frontend/%s", http_file_path);
+            printf("\n File Path: \n %s", file_path);
             FILE *file = fopen(file_path, "r");
             if (file == NULL) {
-                printf("error has occured when attempting to access this page due to file being null")
+                printf("error has occured when attempting to access this page due to file being null");
                 //send back failed response
                 printf("Attempted access page: %s", file_path);
                 write(request_socket, BAD_REQUEST, sizeof(BAD_REQUEST));
@@ -56,18 +69,19 @@ int main()
             char *file_contents = malloc(sizeOfFile);
             if (file_contents == NULL) {
                 printf("An error has occured when trying to malloc for file_contents");
+                
                 write(request_socket, BAD_REQUEST, sizeof(BAD_REQUEST));
                 continue;
             }
             fread(file_contents, 1, sizeOfFile, file);
             //prep HTTP response and send it back
             char http_status_line[] = "HTTP/1.1 200 OK\n\n";
-            char http_response[sizeof(http_status_line)/sizeof(http_status_line[0]) + sizeofFile];
+            char http_response[sizeof(http_status_line)/sizeof(http_status_line[0]) + sizeOfFile];
             snprintf(http_response, sizeof(http_response), "%s%s", http_status_line, file_contents);
             write(request_socket, http_response, sizeof(http_response));
             
             memset(http_response, 0, sizeof(http_response));
-            free(file_Contents);
+            free(file_contents);
         } else if (strncmp(HTTPREQUEST, "POST", 4) == 0) {
             if (strncmp(HTTPREQUEST, POSTCREATE_ACCOUNT, sizeof(POSTCREATE_ACCOUNT)) == 0) {
                 //See Account Creation.c for more, inputs details into file, if they do not exist, sends a html request back depending on the result
@@ -77,3 +91,5 @@ int main()
         }
     }
 }
+
+

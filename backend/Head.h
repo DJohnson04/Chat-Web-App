@@ -8,8 +8,9 @@
 #include <string.h>
 #include <errno.h>
 #include "../database/operations.h"
-#include "ChatRoom.c"
 #include <sys/stat.h>
+//////FUNCTION DEFINITIONS
+#pragma once
 
 //ACCOUNTCREATION Header||||||||||||||||||||||||||||
 
@@ -25,18 +26,6 @@ int AccountCreation(int user_socket, char* buffer);
 
 //Server.c Header|||||||||||||||||||||||||||||||||||||||||
 //HTTP REQUEST HEADERS
-const char POSTCREATE_ACCOUNT[] = "POST /create_account";
-const char GETCREATE_ACCOUNT[] = "get /create_account";
-
-const char POSTLOGIN[] = "POST /login";
-const char GETLOGIN[] = "GET /login";
-
-const char GETHOME[] = "GET /home";
-
-const char GET_CHAT[] = "GET  /chat_";
-const char POSTCHAT[] = "POST /chat_"
-
-char BAD_REQUEST[] = "HTTP/1.1 400 Error\n\n";
 
 //ChatRoom.c Header||||||||||||||||||||||||||||||||||||||
 int load_chatroom(int request_socket, char *chat_room_name);

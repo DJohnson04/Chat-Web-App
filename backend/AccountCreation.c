@@ -81,7 +81,6 @@ int findLen(char *buffer, int startPos, char terminator) {
     while (buffer[count] != terminator && count < 1000) {
         count++;
     }
-    
     return (count - startPos);
 }
 
