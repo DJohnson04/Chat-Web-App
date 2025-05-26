@@ -1,6 +1,6 @@
 //Primary file that runs the server
 #include "Head.h"
-#include "../database/operations.h"
+
 
 int main()
 {
@@ -20,6 +20,16 @@ int main()
         printf("\nRequest Received:\n %s\n\n", HTTPREQUEST);
         //need to sort POST /create_account HTTP/1.1 || GET /create_account HTTP/1.1 || GET /login || GET /home HTTP/1.1 || get /chat_roomname HTTP/1.1
         if (strncmp(HTTPREQUEST, "GET", 3) == 0) {
+            if (strncmp(HTTPREQUEST, "GET /chat_", 10) == 0) {
+                int o = 11;
+                while (HTTPREQUEST[o] != ' ') {
+                    o++;
+                } 
+                char room_name[o - 11];
+                strcpy(room_name, &HTTPREQUEST[11], o - 11);
+                printf("\nRoom Name: %s\n", room_name);
+                load_chatroom(request_socket, room_name);
+            }
             //Handle Get Requests
             //Find File under frontend, or return bad request or some error
             // get requested file from HTTPREQUEST -> add '../frontend/file_path' -> store file contents inside buffer, 
@@ -33,22 +43,31 @@ int main()
             FILE *file = fopen(file_path, "r");
             if (file == NULL) {
                 printf("error has occured when attempting to access this page due to file being null")
-                //TODO: send back failed response
-                
-                
-
-                //
+                //send back failed response
+                printf("Attempted access page: %s", file_path);
+                write(request_socket, BAD_REQUEST, sizeof(BAD_REQUEST));
+                continue;
             }
             //find length of file:
             fseek(file, 0, SEEK_END);
             size_t sizeOfFile = ftell(file);
             fseek(file, 0, SEEK_SET);
 
-            char *file_Contents = malloc(sizeOfFile);
-            fread(file_Contents, 1, sizeOfFile, file);
-            //TODO: prep HTTP response and send it back
+            char *file_contents = malloc(sizeOfFile);
+            if (file_contents == NULL) {
+                printf("An error has occured when trying to malloc for file_contents");
+                write(request_socket, BAD_REQUEST, sizeof(BAD_REQUEST));
+                continue;
+            }
+            fread(file_contents, 1, sizeOfFile, file);
+            //prep HTTP response and send it back
+            char http_status_line[] = "HTTP/1.1 200 OK\n\n";
+            char http_response[sizeof(http_status_line)/sizeof(http_status_line[0]) + sizeofFile];
+            snprintf(http_response, sizeof(http_response), "%s%s", http_status_line, file_contents);
+            write(request_socket, http_response, sizeof(http_response));
+            
+            memset(http_response, 0, sizeof(http_response));
             free(file_Contents);
-
         } else if (strncmp(HTTPREQUEST, "POST", 4) == 0) {
             if (strncmp(HTTPREQUEST, POSTCREATE_ACCOUNT, sizeof(POSTCREATE_ACCOUNT)) == 0) {
                 //See Account Creation.c for more, inputs details into file, if they do not exist, sends a html request back depending on the result

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <errno.h>
 #include "../database/operations.h"
-#include "../database/operations.c"
+#include "ChatRoom.c"
 #include <sys/stat.h>
 
 //ACCOUNTCREATION Header||||||||||||||||||||||||||||
@@ -36,4 +36,7 @@ const char GETHOME[] = "GET /home";
 const char GET_CHAT[] = "GET  /chat_";
 const char POSTCHAT[] = "POST /chat_"
 
+char BAD_REQUEST[] = "HTTP/1.1 400 Error\n\n";
 
+//ChatRoom.c Header||||||||||||||||||||||||||||||||||||||
+int load_chatroom(int request_socket, char *chat_room_name);
